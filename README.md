@@ -3,4 +3,4 @@
 
 目前仍存在少量问题
 
-<font color=#FFFFFF>感谢邹佬提供的tuple方法@zonepg</font>
+<font color=#FFFFFF>感谢邹佬提供的技术帮助 @zonepg</font>
