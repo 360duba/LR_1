@@ -421,8 +421,6 @@ void CheckLR1class::makeAnalysedSheet() {
 			}
 		}
 	}
-		
-		
 
 		//if (tmp->first.ProjectItem.size() == 1 && get<Index>(*tmp->first.ProjectItem.begin()) == get<GrammarSentence>(*tmp->first.ProjectItem.begin()).length()) {	//规约
 			//if (tmp->first.ProjectItem.begin()->GrammarVn == "0" && tmp->first.ProjectItem.begin()->SearchSymbol.size() == 1 && *tmp->first.ProjectItem.begin()->SearchSymbol.begin() == '#' && tmp->first.ProjectItem.begin()->GrammarSentence == std::string{ mostcharacter }) {	//ACC接受
@@ -453,6 +451,7 @@ void CheckLR1class::makeAnalysedSheet() {
 	
 	
 }
+
 
 
 //获取当前项目族闭包
@@ -505,6 +504,7 @@ statusblock CheckLR1class::getCLOSURE(statusblock input) {
 
 	return output;
 }
+
 
 
 void CheckLR1class::makeAnalysedSheet(string input) {
@@ -645,6 +645,62 @@ void CheckLR1class::BindoutputStatusSheetHWND(HWND Output_RichTextDialogclass) {
 
 }
 
+void CheckLR1class::outputGroupset() {
+	SendMessage(FollowSet_Bind_RichTextDialogclass, LVM_DELETEALLITEMS, 0, 0);
+
+	LV_ITEM lv;
+	lv.mask = LVIF_TEXT;
+	lv.iImage = 0;
+
+	lv.iItem = 0;
+	lv.iSubItem = 0;
+
+	for (auto i = ReservedStatusblocksOrder.begin(); i != ReservedStatusblocksOrder.end(); i++) {
+		lv.pszText = toTCHAR(i->first);
+		ListView_InsertItem(FollowSet_Bind_RichTextDialogclass, &lv);
+		lv.iSubItem++;
+		
+		string totalgroupsets = "";
+		
+		for (auto ii = i->second.ProjectItem.begin(); ii != i->second.ProjectItem.end(); ii++) {
+			string groupsets = "";
+			groupsets += get<GrammarVn>(*ii);
+			groupsets += "->";
+			groupsets += get<GrammarSentence>(*ii);
+			groupsets += " , ";
+			auto tmp = get<SymbolSet>(*ii);
+			auto tmpend = tmp.end();
+			tmpend--;
+			for (auto iii = tmp.begin(); iii != tmpend; iii++) {
+				groupsets += *iii;
+				groupsets += "|";
+			}
+			groupsets += *tmpend;
+
+			auto tmp2 = groupsets.begin();
+			int counter = 0;
+			while (counter < get<Index>(*ii)+3) {
+				counter++;
+				tmp2++;
+			}
+			groupsets.insert(tmp2, '.');
+			for(int whatatmp=0; whatatmp < 50-groupsets.length(); whatatmp++)
+				groupsets += " ";
+			//groupsets += "\r\n";
+			totalgroupsets += groupsets;
+		}
+
+
+		lv.pszText = toTCHAR(string{ totalgroupsets });
+		ListView_SetItem(FollowSet_Bind_RichTextDialogclass, &lv);
+		lv.iSubItem++;
+
+
+		lv.iItem++;
+		lv.iSubItem = 0;
+	}
+}
+
 void CheckLR1class::outputstatussheet() {
 	SendMessage(StatusSheet_Bind_RichTextDialogclass, LVM_DELETEALLITEMS, 0, 0);
 
@@ -722,7 +778,7 @@ void CheckLR1class::outputaline(deque<int> &statusstack, deque<char> &symbolstac
 	}
 	
 
-	lv.pszText = toTCHAR(totalitem-1);
+	lv.pszText = toTCHAR(totalitem+1);
 	ListView_InsertItem(Output_Bind_RichTextDialogclass, &lv);
 	lv.iSubItem++;
 
@@ -820,15 +876,20 @@ void CheckLR1class::DoCheck() {
 				char numbuffer[10] = { 0 };
 				_itoa_s(statusstack.back(), numbuffer, 10);
 
+				auto lastsymbolstack = symbolstack;
+				auto laststatusstack = statusstack;
+
+				
+
+				symbolstack.push_back(inputchar);
+				statusstack.push_back(atoi(tmp.substr(1).c_str()) );
+
 				tmpbuffer += string{ numbuffer };
 				tmpbuffer += ",";
 				tmpbuffer += inputchar;
 				tmpbuffer += "]=";
 				tmpbuffer += tmp.substr(1);
-				outputaline(statusstack, symbolstack, reststring, tmpbuffer);
-
-				symbolstack.push_back(inputchar);
-				statusstack.push_back(atoi(tmp.substr(1).c_str()) );
+				outputaline(laststatusstack, lastsymbolstack, reststring, tmpbuffer);
 
 				reststring.erase(reststring.begin());
 
@@ -845,6 +906,7 @@ void CheckLR1class::DoCheck() {
 						tmpbuffer += "GOTO(";
 
 						auto lastsymbolstack = symbolstack;
+						auto laststatusstack = statusstack;
 
 						for (int looptime = 0; looptime < tmper->first.length(); looptime++) {
 							statusstack.pop_back();
@@ -864,7 +926,7 @@ void CheckLR1class::DoCheck() {
 
 
 						tmpbuffer += GOTO[*tmpstatus][tmper->second.at(0)];
-						outputaline(statusstack, lastsymbolstack, reststring, tmpbuffer);
+						outputaline(laststatusstack, lastsymbolstack, reststring, tmpbuffer);
 						symbolstack.push_back(tmper->second.at(0));
 
 					//	statusstack.pop_back();

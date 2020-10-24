@@ -273,6 +273,7 @@ public:
 	void BindoutputStatusSheetHWND(HWND Output_RichTextDialogclass);
 	void BindOutputHWND(HWND Output_RichTextDialogclass);
 	void collapsesameFormula(statusblock& input);
+	void outputGroupset();
 
 	TCHAR* toTCHAR(std::string input);
 	TCHAR* toTCHAR(int input);

@@ -283,6 +283,41 @@ void CreateFirstSetWindow(HWND mainwindows_hWnd) {
 
 }
 
+void CreateFollowSetWindow(HWND mainwindows_hWnd) {
+    hwndList_FollowSet = CreateWindowEx(0, WC_LISTVIEW, TEXT(""),
+        WS_VISIBLE | WS_BORDER | WS_CHILD | LVS_REPORT | WS_THICKFRAME  | WS_EX_TOPMOST | (WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX)   /* | LVS_EDITLABELS*/,
+        0, 400, 480, 400,
+        mainwindows_hWnd, (HMENU)IDM_LISTBOX_OUTPUT, hInst, 0);
+
+    SetWindowPos(hwndList_FollowSet, HWND_TOP, NULL, NULL, NULL, NULL, SWP_NOSIZE | SWP_NOMOVE | SWP_NOCOPYBITS);
+
+    ListView_SetExtendedListViewStyle(hwndList_FirstSet, LVS_EX_FULLROWSELECT /*| LVS_EX_CHECKBOXES*/ | LVS_EX_GRIDLINES);
+
+    tagLVCOLUMNW lvcolum;
+
+
+    lvcolum.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+    lvcolum.fmt = LVCFMT_LEFT | LVCFMT_WRAP;
+    lvcolum.cx = 150;
+    
+
+    lvcolum.iSubItem = 0;
+    TCHAR orders[] = TEXT("编号"), lefts[] = TEXT("项目族");
+
+    lvcolum.pszText = orders;
+    ListView_InsertColumn(hwndList_FollowSet, lvcolum.iSubItem, &lvcolum);
+    lvcolum.iSubItem++;
+
+    lvcolum.cx = 1000;
+    lvcolum.pszText = lefts;
+    ListView_InsertColumn(hwndList_FollowSet, lvcolum.iSubItem, &lvcolum);
+    lvcolum.iSubItem++;
+
+
+
+}
+
+
 /**************************************************************
 *   函数名：	createwidgets
 *	功能：	创建富文本框函数
@@ -364,6 +399,22 @@ void StartFirstSetWindow(HWND mainwindows_hWnd) {
     ChangeSizetoDefault(mainwindows_hWnd);
 }
 
+void StartGroupSetWindow(HWND mainwindows_hWnd) {
+    PWINDOWINFO tmp = (PWINDOWINFO)malloc(sizeof(WINDOWINFO));
+    tmp->cbSize = sizeof(WINDOWINFO);
+    DestroyWindow(hwndList);
+    DestroyWindow(hwndList_StatusSheet);
+    DestroyWindow(hwndList_FirstSet);
+    if (GetWindowInfo(hwndList_FollowSet, tmp) == TRUE) {
+        ShowWindow(hwndList_FollowSet, SW_SHOWNORMAL);
+        UpdateWindow(hwndList_FollowSet);
+        UpdateWindow(mainwindows_hWnd);
+    }
+    else {
+        CreateFollowSetWindow(mainwindows_hWnd);
+    }
+    ChangeSizetoDefault(mainwindows_hWnd);
+}
 
 /**************************************************************
 *   函数名：	SubWindows_AddVIW
@@ -424,6 +475,7 @@ LRESULT CALLBACK WndProc_SubWindows(HWND hWnd, UINT message, WPARAM wParam, LPAR
 
         case IDM_BUTTON_SETGRAMMAR:
             CheckLR1Core.makeAnalysedSheet(str);
+            DestroyWindow(hWnd);
             break;
         }
 
@@ -540,11 +592,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         case ID_MORE_LR1:
             StartLL1Windows(hWnd);
-            break;
+            break; 
         case ID_MORE_PROJECTWINDOW:
             StartFirstSetWindow(hWnd);
             CheckLR1Core.BindoutputFirstSetHWND(hwndList_FirstSet);
             CheckLR1Core.outputGrammarFormula();
+            break;
+        case ID_MORE_GROUPSETWINDOW:
+            StartGroupSetWindow(hWnd);
+            CheckLR1Core.BindoutputFollowSetHWND(hwndList_FollowSet);
+            CheckLR1Core.outputGroupset();
             break;
         case ID_MORE_STATUSSHEETWINDOW:
             CheckLR1Core.BindoutputStatusSheetHWND(hwndList_StatusSheet);
