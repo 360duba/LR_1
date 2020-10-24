@@ -787,8 +787,8 @@ void CheckLR1class::outputGrammarFormula(){
 
 void CheckLR1class::DoCheck() {
 
-	GOTO[8]['T'] = "7";
-	GOTO[8]['E'] = "2";					//TODO: Solve these Problem 
+	//GOTO[8]['T'] = "7";
+	//GOTO[8]['E'] = "2";					//TODO: Solve these Problem Thanks for the help from mxy.
 
 	totalitem = 0;
 	bool finished = 0;
@@ -808,7 +808,7 @@ void CheckLR1class::DoCheck() {
 
 	//reststring = "i+i*i#";
 
-	while(reststring.length()>0 && symbolstack.size()>0 && statusstack.size()>0) {
+	while(reststring.length()>0 /*&& symbolstack.size()>0 && statusstack.size()>0*/) {
 		char inputchar = reststring.at(0);
 
 		
@@ -844,8 +844,15 @@ void CheckLR1class::DoCheck() {
 						tmpbuffer += " reduced ,";
 						tmpbuffer += "GOTO(";
 
+						auto lastsymbolstack = symbolstack;
+
+						for (int looptime = 0; looptime < tmper->first.length(); looptime++) {
+							statusstack.pop_back();
+							symbolstack.pop_back();
+						}
+
 						auto tmpstatus = statusstack.rbegin();
-						tmpstatus++;
+						//tmpstatus++;
 
 						char numbuffer[10] = { 0 };
 						_itoa_s(*tmpstatus, numbuffer, 10);
@@ -854,16 +861,13 @@ void CheckLR1class::DoCheck() {
 						tmpbuffer += ",";
 						tmpbuffer += tmper->second;
 						tmpbuffer += ")=";
+
+
 						tmpbuffer += GOTO[*tmpstatus][tmper->second.at(0)];
-
-						outputaline(statusstack, symbolstack, reststring, tmpbuffer);
-
-
-						for(int looptime=0;looptime<tmper->first.length();looptime++)
-							symbolstack.pop_back();
+						outputaline(statusstack, lastsymbolstack, reststring, tmpbuffer);
 						symbolstack.push_back(tmper->second.at(0));
 
-						statusstack.pop_back();
+					//	statusstack.pop_back();
 
 						
 
