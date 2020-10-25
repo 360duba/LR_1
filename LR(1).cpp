@@ -610,6 +610,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             //CheckLR1Core.CreateAnalyseSheet();
             CheckLR1Core.outputstatussheet();
             break;
+        case ID_MORE_SHOWDFA:
+            CheckLR1Core.drawDFAGraph();
+            //WinExec("start tmp.jpg", SW_NORMAL);
+            system("start tmp.jpg");
+            break;
         case IDM_ABOUT:
             DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
             break;

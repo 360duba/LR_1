@@ -274,7 +274,8 @@ public:
 	void BindOutputHWND(HWND Output_RichTextDialogclass);
 	void collapsesameFormula(statusblock& input);
 	void outputGroupset();
-
+	void makeStatusblockssets(statusblock &input);
+	void drawDFAGraph();
 	TCHAR* toTCHAR(std::string input);
 	TCHAR* toTCHAR(int input);
 

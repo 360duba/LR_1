@@ -314,7 +314,116 @@ void CheckLR1class::makeAnalysedSheet() {
 		}
 	}
 
-	//makeStatusblockssets();
+	makeStatusblockssets(initalstatusblock);
+	drawDFAGraph();
+}
+
+//保存为dot格式并利用graphviz输出DFA图像
+void CheckLR1class::drawDFAGraph() {
+	FILE* fp;
+	char PhotoPath[] = "tmp.jpg";
+	char DotFilePath[] = "tmp.dot";
+	fopen_s(&fp, DotFilePath, "w+");
+
+	if (fp != NULL) {
+		string outputbuffer = "digraph G{\n";
+
+		for (auto i = StatusblocksOrder.begin(); i != StatusblocksOrder.end(); i++) {
+			string tmpbuffer = "";
+			char numbertmpbuffer[20] = { 0 };
+
+			_itoa_s(StatusblocksOrder[i->first], numbertmpbuffer, 10);
+			tmpbuffer += "node";
+			tmpbuffer += string{ numbertmpbuffer };
+			string numbertmpbufferstring1 = "node";
+			numbertmpbufferstring1 += string{ numbertmpbuffer };
+			tmpbuffer += "[label =\"";
+
+			string totalgroupsets = "";
+
+			for (auto ii = i->first.ProjectItem.begin(); ii != i->first.ProjectItem.end(); ii++) {
+				string groupsets = "";
+				groupsets += get<GrammarVn>(*ii);
+				groupsets += "->";
+				groupsets += get<GrammarSentence>(*ii);
+				groupsets += " , ";
+				auto tmp = get<SymbolSet>(*ii);
+				auto tmpend = tmp.end();
+				tmpend--;
+				for (auto iii = tmp.begin(); iii != tmpend; iii++) {
+					groupsets += *iii;
+					groupsets += "|";
+				}
+				groupsets += *tmpend;
+
+				auto tmp2 = groupsets.begin();
+				int counter = 0;
+				while (counter < get<Index>(*ii) + 3) {
+					counter++;
+					tmp2++;
+				}
+				groupsets.insert(tmp2, '.');
+				groupsets += "\\n";
+				totalgroupsets += groupsets;
+			}
+
+			tmpbuffer += totalgroupsets;
+			tmpbuffer += "\", shape = \"box\"];\n";
+
+			outputbuffer += tmpbuffer;
+		}
+
+
+		for (auto i = GOset.begin(); i != GOset.end(); i++) {
+			string tmpbuffer = "";
+			char numbertmpbuffer[20] = { 0 };
+
+			_itoa_s(StatusblocksOrder[i->first], numbertmpbuffer, 10);
+			string numbertmpbufferstring1 = "node";
+			numbertmpbufferstring1 += string{ numbertmpbuffer };
+
+			for (auto ii = i->second.begin(); ii != i->second.end(); ii++) {
+				char numbertmpbuffer2[20] = { 0 };
+
+				_itoa_s(StatusblocksOrder[ii->second], numbertmpbuffer2, 10);
+				string numbertmpbufferstring2 = "node";
+				numbertmpbufferstring2 += string{ numbertmpbuffer2 };
+
+				tmpbuffer += numbertmpbufferstring1;
+				tmpbuffer += "->";
+				tmpbuffer += numbertmpbufferstring2;
+				tmpbuffer += " [label=\"";
+				tmpbuffer += string{ ii->first };
+				tmpbuffer += "\"]; \n";
+
+
+			}
+
+			outputbuffer += tmpbuffer;
+		}
+
+		outputbuffer += "}";
+		char* outputbufferchar = (char*)malloc(sizeof(char) * (outputbuffer.length() + 1));
+		int i = 0;
+		for (; i < outputbuffer.length(); i++) {
+			*(outputbufferchar + i) = outputbuffer.at(i);
+		}
+		*(outputbufferchar + i) = '\0';
+		fwrite(outputbufferchar, sizeof(char), outputbuffer.length() + 1, fp);
+		fclose(fp);
+
+		WinExec("Graphviz\\bin\\dot.exe -Tjpg tmp.dot -o tmp.jpg", SW_HIDE);
+		//system("Graphviz\\bin\\dot.exe -Tjpg tmp.dot -o tmp.jpg");	//xdm 出不来jpg图像记得在这里改路径啊
+
+	}
+
+	
+
+
+}
+
+void CheckLR1class::makeStatusblockssets(statusblock &initalstatusblock) {
+
 
 	StatusblocksOrder.insert(make_pair(initalstatusblock, 0));			//零状态
 
@@ -325,7 +434,7 @@ void CheckLR1class::makeAnalysedSheet() {
 				isfind = true;
 			}
 		}
-		if(isfind==false)
+		if (isfind == false)
 			StatusblocksOrder.insert(make_pair(i->first, StatusblocksOrder.size()));
 
 		for (auto ii = i->second.begin(); ii != i->second.end(); ii++) {
@@ -339,13 +448,13 @@ void CheckLR1class::makeAnalysedSheet() {
 				StatusblocksOrder.insert(make_pair(ii->second, StatusblocksOrder.size()));
 
 		}
-		
+
 	}
 
 
 	for (auto i = GOset.begin(); i != GOset.end(); i++) {
 		for (auto tmpsearchsymbol = i->second.begin(); tmpsearchsymbol != i->second.end(); tmpsearchsymbol++) {
-			if(Vnset.find(tmpsearchsymbol->first)==Vnset.end())
+			if (Vnset.find(tmpsearchsymbol->first) == Vnset.end())
 				SearchSymbolsets.insert(tmpsearchsymbol->first);
 			else
 				VnSymbolSets.insert(tmpsearchsymbol->first);
@@ -355,7 +464,7 @@ void CheckLR1class::makeAnalysedSheet() {
 	//存入表中
 	//createAnalysedSheet();
 
-	
+
 	//建立空表
 	for (auto row_iter = StatusblocksOrder.begin(); row_iter != StatusblocksOrder.end(); row_iter++) {
 		for (auto col_iter = SearchSymbolsets.begin(); col_iter != SearchSymbolsets.end(); col_iter++) {
@@ -379,12 +488,12 @@ void CheckLR1class::makeAnalysedSheet() {
 				else {
 					char numbertmpbuffer[10] = { 0 };
 					auto check = StatusblocksOrder.at(tmpchar->second);
-					_itoa_s(StatusblocksOrder.at(tmpchar->second), numbertmpbuffer,10 );
+					_itoa_s(StatusblocksOrder.at(tmpchar->second), numbertmpbuffer, 10);
 					GOTO[StatusblocksOrder[tmpi->first]][tmpchar->first] = std::string{ numbertmpbuffer };
 				}
 			}
 		}
-		
+
 	}
 
 	for (auto tmpi = StatusblocksOrder.begin(); tmpi != StatusblocksOrder.end(); tmpi++) {
@@ -412,7 +521,7 @@ void CheckLR1class::makeAnalysedSheet() {
 			}
 		}
 	}
-		
+
 	for (auto tmp = StatusblocksOrder.begin(); tmp != StatusblocksOrder.end(); tmp++) {
 		for (auto iter = tmp->first.ProjectItem.begin(); iter != tmp->first.ProjectItem.end(); iter++) {
 			if (get< GrammarVn>(*iter) == "0" && get< Index>(*iter) == get<GrammarSentence>(*iter).length() && get<SearchSymbol>(*iter).size() == 1 && *get< SearchSymbol >(*iter).begin() == '#' && get< GrammarSentence>(*iter) == std::string{ mostcharacter }) {	//ACC接受
@@ -422,37 +531,34 @@ void CheckLR1class::makeAnalysedSheet() {
 		}
 	}
 
-		//if (tmp->first.ProjectItem.size() == 1 && get<Index>(*tmp->first.ProjectItem.begin()) == get<GrammarSentence>(*tmp->first.ProjectItem.begin()).length()) {	//规约
-			//if (tmp->first.ProjectItem.begin()->GrammarVn == "0" && tmp->first.ProjectItem.begin()->SearchSymbol.size() == 1 && *tmp->first.ProjectItem.begin()->SearchSymbol.begin() == '#' && tmp->first.ProjectItem.begin()->GrammarSentence == std::string{ mostcharacter }) {	//ACC接受
+	//if (tmp->first.ProjectItem.size() == 1 && get<Index>(*tmp->first.ProjectItem.begin()) == get<GrammarSentence>(*tmp->first.ProjectItem.begin()).length()) {	//规约
+		//if (tmp->first.ProjectItem.begin()->GrammarVn == "0" && tmp->first.ProjectItem.begin()->SearchSymbol.size() == 1 && *tmp->first.ProjectItem.begin()->SearchSymbol.begin() == '#' && tmp->first.ProjectItem.begin()->GrammarSentence == std::string{ mostcharacter }) {	//ACC接受
 
-				//for (auto tmpchar = tmp->first.ProjectItem.begin()->SearchSymbol.begin(); tmpchar != tmp->first.ProjectItem.begin()->SearchSymbol.end(); tmpchar++) {
-				//for (auto tmpchar = get< SearchSymbol>(*tmp->first.ProjectItem.begin()).begin(); tmpchar != get< SearchSymbol>(*tmp->first.ProjectItem.begin()).end(); tmpchar++) {
-					//for (auto tmper = ReservedStatusblocksOrder.begin(); tmper != ReservedStatusblocksOrder.end(); tmper++) {
-						/*if (tmper->second.ProjectItem.size()==1 && get< GrammarVn>(*tmper->second.ProjectItem.begin()) == get< GrammarVn>(*tmp->first.ProjectItem.begin()) && get< GrammarSentence>(*tmper->second.ProjectItem.begin()) == get< GrammarSentence>(*tmp->first.ProjectItem.begin())) {
-							int Grammarorder = 0;
-							for(auto Grammartmper=GrammarFormula.begin(); Grammartmper!=GrammarFormula.end(); Grammartmper++, Grammarorder++){
-								if (Grammartmper->second == get<GrammarVn>(*tmper->second.ProjectItem.begin()) && Grammartmper->first == get<GrammarSentence>(*tmper->second.ProjectItem.begin())) {
-									
-									char numbertmpbuffer[10] = { 0 };
-									_itoa_s(Grammarorder, numbertmpbuffer, 10);
-									ACTION[StatusblocksOrder[tmp->first]][*tmpchar] = "r" + string{ numbertmpbuffer };
-								}
+			//for (auto tmpchar = tmp->first.ProjectItem.begin()->SearchSymbol.begin(); tmpchar != tmp->first.ProjectItem.begin()->SearchSymbol.end(); tmpchar++) {
+			//for (auto tmpchar = get< SearchSymbol>(*tmp->first.ProjectItem.begin()).begin(); tmpchar != get< SearchSymbol>(*tmp->first.ProjectItem.begin()).end(); tmpchar++) {
+				//for (auto tmper = ReservedStatusblocksOrder.begin(); tmper != ReservedStatusblocksOrder.end(); tmper++) {
+					/*if (tmper->second.ProjectItem.size()==1 && get< GrammarVn>(*tmper->second.ProjectItem.begin()) == get< GrammarVn>(*tmp->first.ProjectItem.begin()) && get< GrammarSentence>(*tmper->second.ProjectItem.begin()) == get< GrammarSentence>(*tmp->first.ProjectItem.begin())) {
+						int Grammarorder = 0;
+						for(auto Grammartmper=GrammarFormula.begin(); Grammartmper!=GrammarFormula.end(); Grammartmper++, Grammarorder++){
+							if (Grammartmper->second == get<GrammarVn>(*tmper->second.ProjectItem.begin()) && Grammartmper->first == get<GrammarSentence>(*tmper->second.ProjectItem.begin())) {
 
+								char numbertmpbuffer[10] = { 0 };
+								_itoa_s(Grammarorder, numbertmpbuffer, 10);
+								ACTION[StatusblocksOrder[tmp->first]][*tmpchar] = "r" + string{ numbertmpbuffer };
 							}
-							
+
 						}
+
 					}
-					
 				}
 
-		}*/
-	
+			}
 
-	
-	
+	}*/
+
+
+
 }
-
-
 
 //获取当前项目族闭包
 statusblock CheckLR1class::getCLOSURE(statusblock input) {

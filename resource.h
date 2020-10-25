@@ -32,6 +32,8 @@
 #define ID_FILE_SETGRAMMAR              32788
 #define ID_MORE_GROUPSETWINDOW          32789
 #define ID_HELP_32790                   32790
+#define ID_HELP_32791                   32791
+#define ID_MORE_SHOWDFA                 32792
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -40,7 +42,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        129
-#define _APS_NEXT_COMMAND_VALUE         32791
+#define _APS_NEXT_COMMAND_VALUE         32793
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
